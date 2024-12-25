@@ -1,16 +1,147 @@
 services:
-  heavyai:
-    image: heavyai/heavyai-ee-cuda:latest
-    container_name: heavyai
-    restart: always
+  config-watcher:
+    image: debian:bullseye-slim
+    container_name: config-watcher
     volumes:
-      - /var/lib/heavyai:/var/lib/heavyai
+      - ./scripts/config-watcher.sh:/config-watcher.sh
+      - ./configs:/configs
+      - ${HEAVY_CONFIG_BASE}:${HEAVY_CONFIG_BASE}
+    entrypoint: /bin/bash -c 'apt-get update && apt-get install -y gettext-base && chmod +x /config-watcher.sh && /config-watcher.sh'
+    healthcheck:
+      test: ["CMD", "test", "-d", "${HEAVY_CONFIG_BASE}"]
+      interval: 2s
+      timeout: 1s
+      retries: 10
+      start_period: 2s
+    env_file: .env
+
+  heavydb:
+    container_name: heavydb
+    build:
+      context: .
+      dockerfile: Dockerfile.odbc
+      args:
+        HEAVYAI_IMAGE: ${HEAVYAI_IMAGE}
+        HEAVYAI_VERSION: ${HEAVYAI_VERSION}
+    restart: unless-stopped
+    ipc: shareable
+    depends_on:
+      config-watcher:
+        condition: service_healthy
+    entrypoint: >
+      /bin/bash -c "mkdir -p ${HEAVY_STORAGE_DIR} &&
+      mkdir -p ${HEAVYDB_IMPORT_PATH} &&
+      mkdir -p ${HEAVYDB_EXPORT_PATH} &&
+      chmod -R 755 ${HEAVY_STORAGE_DIR} &&
+      chmod -R 755 ${HEAVYDB_IMPORT_PATH} &&
+      chmod -R 755 ${HEAVYDB_EXPORT_PATH} &&
+      [ -f ${HEAVY_STORAGE_DIR}/catalogs/system_catalog ] || 
+      /opt/heavyai/bin/initheavy --data ${HEAVY_STORAGE_DIR};
+      /opt/heavyai/bin/heavydb --config ${HEAVYDB_CONFIG_FILE}"
+    volumes:
+      - ${HEAVY_CONFIG_BASE}:${HEAVY_CONFIG_BASE}
+      - ./configs/odbcinst.ini:/etc/odbcinst.ini
+      - ./configs/odbc.ini:/etc/odbc.ini
+    networks:
+      - heavy-network
     ports:
-      - "6273-6279:6273-6279"
+      - "${HEAVYDB_PORT}:${HEAVYDB_PORT}"
+      - "${HEAVYDB_BACKEND_PORT}:${HEAVYDB_BACKEND_PORT}"
+      - "${HEAVYDB_CALCITE_PORT}:${HEAVYDB_CALCITE_PORT}"
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              count: all
+              count: ${GPU_COUNT}
               capabilities: [gpu]
+    env_file: .env
+
+  immerse:
+    container_name: immerse
+    image: ${HEAVYAI_IMAGE}:${HEAVYAI_VERSION}
+    restart: unless-stopped
+    ipc: shareable
+    depends_on:
+      config-watcher:
+        condition: service_healthy
+      heavydb:
+        condition: service_started
+    entrypoint: /bin/bash -c '/opt/heavyai/bin/heavy_web_server --config ${HEAVY_IMMERSE_CONFIG_FILE}'
+    volumes:
+      - ${HEAVY_CONFIG_BASE}:${HEAVY_CONFIG_BASE}
+    networks:
+      - heavy-network
+    expose:
+      - "${IMMERSE_PORT}"
+    env_file: .env
+
+  heavyiq:
+    container_name: heavyiq
+    image: ${HEAVYAI_IMAGE}:${HEAVYAI_VERSION}
+    restart: unless-stopped
+    ipc: shareable
+    depends_on:
+      config-watcher:
+        condition: service_healthy
+      heavydb:
+        condition: service_started
+    environment:
+      - CONFIG_FILE=${HEAVY_IQ_CONFIG_FILE}
+      - MAPD_DATA=${HEAVY_IQ_LOCATION}
+      - MAPD_HEAVYIQ_PORT=${HEAVYIQ_PORT}
+    entrypoint: /bin/bash -c '/opt/heavyai/scripts/ee/start_heavyiq.sh && tail -f /dev/null'
+    volumes:
+      - ${HEAVY_CONFIG_BASE}:${HEAVY_CONFIG_BASE}
+    networks:
+      - heavy-network
+    expose:
+      - "${HEAVYIQ_PORT}"
+    env_file: .env
+
+  jupyterhub:
+    build:
+      context: ./configs/jupyterhub
+      dockerfile: Dockerfile.jupyterhub
+      args:
+        JUPYTERHUB_VERSION: ${JUPYTERHUB_VERSION}
+    container_name: jupyterhub
+    restart: unless-stopped
+    volumes:
+      - ./configs/jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py:ro
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - jupyterhub-data:/data
+    environment:
+      - JUPYTERHUB_ADMIN=${JUPYTERHUB_ADMIN}
+      - DOCKER_NETWORK_NAME=heavy-network
+      - DOCKER_NOTEBOOK_IMAGE=${DOCKER_NOTEBOOK_IMAGE}
+      - DOCKER_NOTEBOOK_DIR=${DOCKER_NOTEBOOK_DIR}
+      - DOCKER_SPAWN_CMD=${DOCKER_SPAWN_CMD}
+    networks:
+      - heavy-network
+    expose:
+      - "${JUPYTERHUB_PORT}"
+    env_file: .env
+
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./configs/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - heavy-network
+    env_file: .env
+
+networks:
+  heavy-network:
+    name: heavy-network
+
+volumes:
+  jupyterhub-data:
+  caddy-data:
+  caddy-config:

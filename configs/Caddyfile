@@ -1,0 +1,13 @@
+{
+    email {$EMAIL}
+}
+
+{$DOMAIN} {
+    handle /jupyter/* {
+        reverse_proxy jupyterhub:{$JUPYTERHUB_PORT}
+    }
+
+    handle /* {
+        reverse_proxy immerse:{$IMMERSE_PORT}
+    }
+}
