@@ -119,7 +119,7 @@
       "ui/aws-regions": [],
       "ui/enable_shared_color_settings": true,
       "ui/session_create_timeout": 10000,
-      "dev/sql_notebook_cards": "{\"heavyai\": [{\"text\": \"Count the heritage sites in all Saudi regions.\", \"dataSources\": [\"heritage_site\", \"regions\"]}, {\"text\": \"Compare the age of heritage sites in Madinah to all other Saudi regions.\", \"dataSources\": [\"heritage_site\", \"regions\"]}, {\"text\": \"Show areas in Madinah with the highest population density during morning (7-9 AM) vs evening (5-7 PM) rush hours using mobility data.\", \"dataSources\": [\"mobility_madinah_geom\"]}, {\"text\": \"Where are the high-density population areas in Madinah during peak hours versus off-peak hours sorted by off-peak, peak, and all others?\", \"dataSources\": [\"mobility_madinah_geom\"]}, {\"text\": \"Compare hourly population density trends in Madinah on weekdays vs weekends.\", \"dataSources\": [\"mobility_madinah_geom\"]}]}"
+      "dev/sql_notebook_cards": "${string-json-object-from-file('configs/sql_notebook_cards.json')}"
 
       
     },
@@ -130,100 +130,24 @@
     },
     "mapboxCustomStyles": [
       {
+        "label": "Decimal Google Maps Traffic",
+        "value": "${json-object-from-file('configs/basemaps/decimal-gmaps-traffic.json')}"
+      },
+      {
         "label": "Google Maps Roadmap",
-        "value": {
-          "version": 8,
-          "sources": {
-            "google-roadmap": {
-              "type": "raster",
-              "tiles": [
-                "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-              ],
-              "tileSize": 256
-            }
-          },
-          "layers": [
-            {
-              "id": "google-roadmap",
-              "type": "raster",
-              "source": "google-roadmap",
-              "minzoom": 0,
-              "maxzoom": 22
-            }
-          ]
-        }
+        "value": "${json-object-from-file('configs/basemaps/google-maps-roadmap.json')}"
       },
       {
         "label": "Google Maps Satellite",
-        "value": {
-          "version": 8,
-          "sources": {
-            "google-satellite": {
-              "type": "raster",
-              "tiles": [
-                "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
-              ],
-              "tileSize": 256
-            }
-          },
-          "layers": [
-            {
-              "id": "google-satellite",
-              "type": "raster",
-              "source": "google-satellite",
-              "minzoom": 0,
-              "maxzoom": 22
-            }
-          ]
-        }
+        "value": "${json-object-from-file('configs/basemaps/google-maps-satellite.json')}"
       },
       {
         "label": "Google Maps Terrain",
-        "value": {
-          "version": 8,
-          "sources": {
-            "google-terrain": {
-              "type": "raster",
-              "tiles": [
-                "https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}"
-              ],
-              "tileSize": 256
-            }
-          },
-          "layers": [
-            {
-              "id": "google-terrain",
-              "type": "raster",
-              "source": "google-terrain",
-              "minzoom": 0,
-              "maxzoom": 22
-            }
-          ]
-        }
+        "value": "${json-object-from-file('configs/basemaps/google-maps-terrain.json')}"
       },
       {
         "label": "Google Maps Hybrid",
-        "value": {
-          "version": 8,
-          "sources": {
-            "google-hybrid": {
-              "type": "raster",
-              "tiles": [
-                "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
-              ],
-              "tileSize": 256
-            }
-          },
-          "layers": [
-            {
-              "id": "google-hybrid",
-              "type": "raster",
-              "source": "google-hybrid",
-              "minzoom": 0,
-              "maxzoom": 22
-            }
-          ]
-        }
+        "value": "${json-object-from-file('configs/basemaps/google-maps-hybrid.json')}"
       }
     ]
   }

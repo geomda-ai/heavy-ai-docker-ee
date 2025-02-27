@@ -1,0 +1,21 @@
+{
+  "version": 8,
+  "sources": {
+    "google-terrain": {
+      "type": "raster",
+      "tiles": [
+        "https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}"
+      ],
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "google-terrain",
+      "type": "raster",
+      "source": "google-terrain",
+      "minzoom": 0,
+      "maxzoom": 22
+    }
+  ]
+}

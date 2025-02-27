@@ -1,0 +1,24 @@
+{
+  "heavyai": [
+    {
+      "text": "Count the heritage sites in all Saudi regions.",
+      "dataSources": ["heritage_site", "regions"]
+    },
+    {
+      "text": "Compare the age of heritage sites in Madinah to all other Saudi regions.",
+      "dataSources": ["heritage_site", "regions"]
+    },
+    {
+      "text": "Show areas in Madinah with the highest population density during morning (7-9 AM) vs evening (5-7 PM) rush hours using mobility data.",
+      "dataSources": ["mobility_madinah_geom"]
+    },
+    {
+      "text": "Where are the high-density population areas in Madinah during peak hours versus off-peak hours sorted by off-peak, peak, and all others?",
+      "dataSources": ["mobility_madinah_geom"]
+    },
+    {
+      "text": "Compare hourly population density trends in Madinah on weekdays vs weekends.",
+      "dataSources": ["mobility_madinah_geom"]
+    }
+  ]
+}

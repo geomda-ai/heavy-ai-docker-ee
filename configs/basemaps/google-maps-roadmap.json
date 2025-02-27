@@ -1,0 +1,21 @@
+{
+  "version": 8,
+  "sources": {
+    "google-roadmap": {
+      "type": "raster",
+      "tiles": [
+        "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+      ],
+      "tileSize": 256
+    }
+  },
+  "layers": [
+    {
+      "id": "google-roadmap",
+      "type": "raster",
+      "source": "google-roadmap",
+      "minzoom": 0,
+      "maxzoom": 22
+    }
+  ]
+}
