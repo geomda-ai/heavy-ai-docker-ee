@@ -4,9 +4,10 @@ services:
     container_name: config-watcher
     volumes:
       - ./scripts/config-watcher.sh:/config-watcher.sh
+      - ./scripts/check-geos.sh:/check-geos.sh
       - ./configs:/configs
       - ${HEAVY_CONFIG_BASE}:${HEAVY_CONFIG_BASE}
-    entrypoint: /bin/bash -c 'apt-get update && apt-get install -y gettext-base && chmod +x /config-watcher.sh && /config-watcher.sh'
+    entrypoint: /bin/bash -c 'apt-get update && apt-get install -y gettext-base wget xz-utils && chmod +x /config-watcher.sh && /config-watcher.sh'
     healthcheck:
       test: ["CMD", "test", "-d", "${HEAVY_CONFIG_BASE}"]
       interval: 2s

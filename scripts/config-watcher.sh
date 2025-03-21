@@ -35,5 +35,12 @@ chmod 644 "${IMMERSE_SERVERS_JSON}"
 
 echo "Config files processed"
 
+# Check GEOS installation
+if [ -f "/check-geos.sh" ]; then
+    echo "Checking GEOS installation..."
+    chmod +x /check-geos.sh
+    /check-geos.sh
+fi
+
 # Keep container running
 tail -f /dev/null
