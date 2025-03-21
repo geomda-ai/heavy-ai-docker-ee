@@ -1,5 +1,11 @@
 # Changelog
 
+## [8.4.0]
+
+### Added
+- Automated GEOS libraries installation for spatial functions
+- Added LD_LIBRARY_PATH configuration in .env file to ensure GEOS libraries are found
+
 ## [8.5.0] - 2024-03-04
 
 ### Hotfix
