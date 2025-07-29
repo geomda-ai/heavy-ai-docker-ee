@@ -89,9 +89,15 @@ services:
       - CONFIG_FILE=${HEAVY_IQ_CONFIG_FILE}
       - MAPD_DATA=${HEAVY_IQ_LOCATION}
       - MAPD_HEAVYIQ_PORT=${HEAVYIQ_PORT}
-    entrypoint: /bin/bash -c '/opt/heavyai/scripts/ee/start_heavyiq.sh && tail -f /dev/null'
+      - HTTP_PROXY=http://172.19.0.1:8080
+      - HTTPS_PROXY=http://172.19.0.1:8080
+      - NO_PROXY=localhost,127.0.0.1
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+      - SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+    entrypoint: /bin/bash -c "update-ca-certificates && /opt/heavyai/scripts/ee/start_heavyiq.sh && tail -f /dev/null"
     volumes:
       - ${HEAVY_CONFIG_BASE}:${HEAVY_CONFIG_BASE}
+      - /root/.mitmproxy/mitmproxy-ca-cert.pem:/usr/local/share/ca-certificates/mitmproxy.crt:ro
     networks:
       - heavy-network
     expose:
@@ -142,6 +148,8 @@ services:
     networks:
       - heavy-network
     env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 networks:
   heavy-network:
